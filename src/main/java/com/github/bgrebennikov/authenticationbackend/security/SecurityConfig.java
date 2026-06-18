@@ -55,12 +55,11 @@ public class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers("/v3/api-docs").permitAll()
 
-                        // Дополнительные ресурсы для отрисовки интерфейса
                         .requestMatchers("/webjars/**").permitAll()
                         .requestMatchers("/swagger-resources/**").permitAll()
 
-                        // Эндпоинты авторизации
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/.well-known/jwks.json").permitAll()
 
                         // Все остальные запросы закрыты
                         .anyRequest().authenticated()
@@ -83,12 +82,18 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JwtEncoder jwtEncoder() {
+    public JWKSet jwkSet() {
         JWK jwk = new RSAKey.Builder(this.publicKey)
                 .privateKey(this.privateKey)
-                .keyID(UUID.randomUUID().toString())
+                .keyID("auth-backend-key-id")
                 .build();
-        JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
+
+        return new JWKSet(jwk);
+    }
+
+    @Bean
+    public JwtEncoder jwtEncoder() {
+        JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(jwkSet());
         return new NimbusJwtEncoder(jwks);
     }
 }
