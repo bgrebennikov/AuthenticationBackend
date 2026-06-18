@@ -1,9 +1,8 @@
 package com.github.bgrebennikov.authenticationbackend.controller;
 
-import com.github.bgrebennikov.authenticationbackend.data.dto.AuthResponse;
-import com.github.bgrebennikov.authenticationbackend.data.dto.LoginRequest;
-import com.github.bgrebennikov.authenticationbackend.data.dto.RegisterRequest;
+import com.github.bgrebennikov.authenticationbackend.data.dto.*;
 import com.github.bgrebennikov.authenticationbackend.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -13,20 +12,29 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-
     private final AuthService authService;
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public AuthResponse register(@RequestBody RegisterRequest registerRequest) {
-        return authService.register(registerRequest);
+    public AuthResponse register(@RequestBody RegisterRequest registerRequest, HttpServletRequest request) {
+        return authService.register(registerRequest, request);
     }
 
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
-    public AuthResponse login(@RequestBody LoginRequest loginRequest) {
-        return authService.login(loginRequest);
+    public AuthResponse login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+        return authService.login(loginRequest, request);
     }
 
+    @PostMapping("/refresh")
+    @ResponseStatus(HttpStatus.OK)
+    public AuthResponse refresh(@RequestBody TokenRefreshRequest refreshRequest, HttpServletRequest request) {
+        return authService.refresh(refreshRequest, request);
+    }
 
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logout(@RequestBody TokenRefreshRequest refreshRequest, HttpServletRequest request) {
+        authService.logout(refreshRequest);
+    }
 }

@@ -11,10 +11,16 @@ public interface UserSessionRepository extends JpaRepository<UserSession, Long> 
 
     Optional<UserSession> findByRefreshToken(String refreshToken);
 
+    Optional<UserSession> findByUserAndUserAgentAndIpAddress(User user, String userAgent, String ipAddress);
+
     List<UserSession> findByUser(User user);
 
     void deleteByIdAndUser(Long id, User user);
 
     void deleteByUserAndIdNot(User user, Long id);
+
+    void deleteByUserAndExpiresAtBefore(User user, java.time.Instant now);
+
+
 
 }
