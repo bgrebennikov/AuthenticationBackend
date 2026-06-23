@@ -1,6 +1,9 @@
 package com.github.bgrebennikov.authenticationbackend.controller;
 
-import com.github.bgrebennikov.authenticationbackend.data.dto.*;
+import com.github.bgrebennikov.authenticationbackend.data.dto.AuthResponse;
+import com.github.bgrebennikov.authenticationbackend.data.dto.LoginRequest;
+import com.github.bgrebennikov.authenticationbackend.data.dto.RegisterRequest;
+import com.github.bgrebennikov.authenticationbackend.data.dto.TokenRefreshRequest;
 import com.github.bgrebennikov.authenticationbackend.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
