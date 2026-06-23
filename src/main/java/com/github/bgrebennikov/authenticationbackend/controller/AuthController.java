@@ -35,7 +35,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void logout(@RequestBody TokenRefreshRequest refreshRequest, HttpServletRequest request) {
+    public void logout(@RequestBody TokenRefreshRequest refreshRequest) {
         authService.logout(refreshRequest);
     }
 }
