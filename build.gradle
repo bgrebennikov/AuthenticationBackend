@@ -23,15 +23,14 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-rest'
     implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'
 
-    // Обновили Swagger до актуальной версии 3.1.5 для полной совместимости со Spring Boot 4
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.projectlombok:lombok'
     implementation 'com.nimbusds:nimbus-jose-jwt:9.48'
 
-    // Исправили имя тестовой зависимости (правильно: spring-boot-starter-test)
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     testCompileOnly 'org.projectlombok:lombok'
