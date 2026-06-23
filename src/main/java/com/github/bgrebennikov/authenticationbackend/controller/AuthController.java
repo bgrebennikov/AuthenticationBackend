@@ -3,6 +3,7 @@ package com.github.bgrebennikov.authenticationbackend.controller;
 import com.github.bgrebennikov.authenticationbackend.data.dto.*;
 import com.github.bgrebennikov.authenticationbackend.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -16,13 +17,13 @@ public class AuthController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public AuthResponse register(@RequestBody RegisterRequest registerRequest, HttpServletRequest request) {
+    public AuthResponse register(@Valid @RequestBody RegisterRequest registerRequest, HttpServletRequest request) {
         return authService.register(registerRequest, request);
     }
 
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
-    public AuthResponse login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+    public AuthResponse login(@Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         return authService.login(loginRequest, request);
     }
 
