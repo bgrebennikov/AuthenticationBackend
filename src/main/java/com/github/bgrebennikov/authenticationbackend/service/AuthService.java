@@ -155,6 +155,7 @@ public class AuthService {
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(exp))
                 .claim("scope", scope)
+                .claim("userId", user.getId())
                 .build();
 
         return this.jwtEncoder.encode(JwtEncoderParameters.from(claimsSet)).getTokenValue();
