@@ -6,8 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public interface UserSessionRepository extends JpaRepository<UserSession, Long> {
+public interface UserSessionRepository extends JpaRepository<UserSession, UUID> {
 
     Optional<UserSession> findByRefreshToken(String refreshToken);
 
@@ -15,9 +16,9 @@ public interface UserSessionRepository extends JpaRepository<UserSession, Long> 
 
     List<UserSession> findByUser(User user);
 
-    void deleteByIdAndUser(Long id, User user);
+    void deleteByIdAndUser(UUID id, User user);
 
-    void deleteByUserAndIdNot(User user, Long id);
+    void deleteByUserAndIdNot(User user, UUID id);
 
     void deleteByUserAndExpiresAtBefore(User user, java.time.Instant now);
 

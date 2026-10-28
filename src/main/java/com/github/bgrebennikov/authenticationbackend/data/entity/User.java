@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -14,11 +15,12 @@ import java.util.Set;
 @NoArgsConstructor
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(unique = true, nullable = false)
-    private String username;
+    private String email;
+
 
     @Column(nullable = false)
     private String password;
@@ -30,4 +32,21 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private Profile profile;
+
+    public void setProfile(Profile profile) {
+        if (profile == null) {
+            if (this.profile != null) {
+                this.profile.setUser(null);
+            }
+        } else {
+            profile.setUser(this);
+        }
+        this.profile = profile;
+    }
+
 }
