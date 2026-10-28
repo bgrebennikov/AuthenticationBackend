@@ -28,8 +28,8 @@ services:
       - DB_NAME=auth_db
       - DB_USERNAME=postgres
       - DB_PASSWORD=super_secret_password_123
-      - JWT_PRIVATE_KEY=file:${CERTS_PATH:-./certs}/app.der
-      - JWT_PUBLIC_KEY=file:${CERTS_PATH:-./certs}/app.pub.der
+      - JWT_PRIVATE_KEY=file:/app/certs/app.der
+      - JWT_PUBLIC_KEY=file:/app/certs/app.pub.der
     volumes:
       - ${CERTS_PATH:-./certs}:/app/certs:ro
     depends_on:
