@@ -31,7 +31,7 @@ services:
       - JWT_PRIVATE_KEY=file:/app/certs/app.der
       - JWT_PUBLIC_KEY=file:/app/certs/app.pub.der
     volumes:
-      - ./certs:/app/certs:ro
+      - /opt/auth-backend/certs:/app/certs:ro
     depends_on:
       - postgres_db
     networks:
