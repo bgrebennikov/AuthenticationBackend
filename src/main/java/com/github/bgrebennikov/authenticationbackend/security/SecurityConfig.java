@@ -32,7 +32,6 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
 import java.util.List;
 
 @Configuration
@@ -41,20 +40,20 @@ import java.util.List;
 public class SecurityConfig {
 
     @Value("${jwt.public.key}")
-    private String publicKeyBase64;
+    private Resource publicKeyResource;
 
     @Value("${jwt.private.key}")
-    private String privateKeyBase64;
+    private Resource privateKeyResource;
 
     private RSAPublicKey getPublicKey() throws Exception {
-        byte[] keyBytes = Base64.getDecoder().decode(publicKeyBase64);
+        byte[] keyBytes = publicKeyResource.getInputStream().readAllBytes();
         X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
         KeyFactory kf = KeyFactory.getInstance("RSA");
         return (RSAPublicKey) kf.generatePublic(spec);
     }
 
     private RSAPrivateKey getPrivateKey() throws Exception {
-        byte[] keyBytes = Base64.getDecoder().decode(privateKeyBase64);
+        byte[] keyBytes = privateKeyResource.getInputStream().readAllBytes();
         PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
         KeyFactory kf = KeyFactory.getInstance("RSA");
         return (RSAPrivateKey) kf.generatePrivate(spec);
