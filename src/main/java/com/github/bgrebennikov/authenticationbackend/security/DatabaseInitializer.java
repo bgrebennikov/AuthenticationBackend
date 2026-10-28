@@ -19,18 +19,18 @@ public class DatabaseInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (roleRepository.findByName("ROLE_USER").isEmpty()) {
-            Role role = new Role();
-            role.setName("ROLE_USER");
-            roleRepository.save(role);
-            log.info("Role ROLE_USER has been created");
-        }
-
-        if (roleRepository.findByName("ROLE_ADMIN").isEmpty()) {
-            Role role = new Role();
-            role.setName("ROLE_ADMIN");
-            roleRepository.save(role);
-            log.info("Role ROLE_ADMIN has been created");
-        }
+//        if (roleRepository.findByName("ROLE_USER").isEmpty()) {
+//            Role role = new Role();
+//            role.setName("ROLE_USER");
+//            roleRepository.save(role);
+//            log.info("Role ROLE_USER has been created");
+//        }
+//
+//        if (roleRepository.findByName("ROLE_ADMIN").isEmpty()) {
+//            Role role = new Role();
+//            role.setName("ROLE_ADMIN");
+//            roleRepository.save(role);
+//            log.info("Role ROLE_ADMIN has been created");
+//        }
     }
 }

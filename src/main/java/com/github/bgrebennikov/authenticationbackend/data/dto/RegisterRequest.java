@@ -1,6 +1,8 @@
 package com.github.bgrebennikov.authenticationbackend.data.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,4 +19,12 @@ public class RegisterRequest {
     @NotBlank(message = "Password cannot be empty")
     @Size(min = 6, max = 64, message = "Password must be between 6 and 64 characters")
     private String password;
+
+    @NotBlank(message = "Email cannot be empty")
+    @Email(message = "Incorrect email")
+    private String email;
+
+    private String firstName;
+    private String lastName;
+
 }

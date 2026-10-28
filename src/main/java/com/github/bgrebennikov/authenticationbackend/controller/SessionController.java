@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/sessions")
@@ -34,8 +35,8 @@ public class SessionController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void revokeSession(@PathVariable Long id, Principal principal) {
-        authService.revokeSession(id, principal.getName());
+    public void revokeSession(@PathVariable UUID id, Principal principal) {
+        authService.revokeSession(id, UUID.fromString(principal.getName()));
     }
 
     @DeleteMapping("/other")
@@ -43,6 +44,6 @@ public class SessionController {
     public void revokeAllOtherSessions(
             Principal principal,
             @RequestParam("currentRefreshToken") String currentRefreshToken) {
-        authService.revokeAllOtherSessions(principal.getName(), currentRefreshToken);
+        authService.revokeAllOtherSessions(UUID.fromString(principal.getName()), currentRefreshToken);
     }
 }

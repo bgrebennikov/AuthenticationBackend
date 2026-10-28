@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Table(name = "roles")
@@ -14,10 +15,10 @@ import java.util.Set;
 @NoArgsConstructor
 public class Role {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
-    @Column(unique = true, nullable = true)
+    @Column(unique = true, nullable = false)
     private String name;
 
     @ManyToMany(fetch = FetchType.EAGER)

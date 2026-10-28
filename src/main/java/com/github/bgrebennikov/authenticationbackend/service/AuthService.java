@@ -1,15 +1,12 @@
 package com.github.bgrebennikov.authenticationbackend.service;
 
 import com.github.bgrebennikov.authenticationbackend.data.dto.*;
-import com.github.bgrebennikov.authenticationbackend.data.entity.Permission;
-import com.github.bgrebennikov.authenticationbackend.data.entity.Role;
-import com.github.bgrebennikov.authenticationbackend.data.entity.UserSession;
+import com.github.bgrebennikov.authenticationbackend.data.entity.*;
 import com.github.bgrebennikov.authenticationbackend.repository.RoleRepository;
 import com.github.bgrebennikov.authenticationbackend.repository.UserRepository;
 import com.github.bgrebennikov.authenticationbackend.repository.UserSessionRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import com.github.bgrebennikov.authenticationbackend.data.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -36,16 +33,23 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest registerRequest, HttpServletRequest request) {
-        if (userRepository.existsByUsername(registerRequest.getUsername())) {
-            throw new IllegalArgumentException("Username is already in use");
+        if (userRepository.existsByEmail(registerRequest.getUsername())) {
+            throw new IllegalArgumentException("email is already in use");
         }
 
         User user = new User();
-        user.setUsername(registerRequest.getUsername());
+        user.setEmail(registerRequest.getEmail());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
 
         Role defaultRole = roleRepository.findByName("ROLE_USER")
                 .orElseThrow(() -> new IllegalArgumentException("cannot find default role"));
+
+        Profile userProfile = new Profile();
+        userProfile.setUsername(registerRequest.getUsername());
+        userProfile.setFirstName(registerRequest.getFirstName());
+        userProfile.setLastName(registerRequest.getLastName());
+
+        user.setProfile(userProfile);
 
         Set<Role> roles = new HashSet<>();
         roles.add(defaultRole);
@@ -58,7 +62,7 @@ public class AuthService {
 
     @Transactional
     public AuthResponse login(LoginRequest loginRequest, HttpServletRequest request) {
-        User user = userRepository.findByUsername(loginRequest.getUsername())
+        User user = userRepository.findByEmail(loginRequest.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("Incorrect account credentials"));
 
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
@@ -90,15 +94,13 @@ public class AuthService {
         String accessToken = generateAccessToken(userSession.getUser());
         return new AuthResponse(
                 accessToken, userSession.getRefreshToken(),
-                userSession.getUser().getUsername()
+                userSession.getUser().getId()
         );
-
     }
 
-
     @Transactional(readOnly = true)
-    public List<SessionResponse> getActiveSessions(String username, String currentRefreshToken) {
-        User user = userRepository.findByUsername(username)
+    public List<SessionResponse> getActiveSessions(String email, String currentRefreshToken) {
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         return userSessionRepository.findByUser(user).stream()
@@ -110,20 +112,19 @@ public class AuthService {
                         session.getRefreshToken().equals(currentRefreshToken)
                 ))
                 .collect(Collectors.toList());
-
     }
 
     @Transactional
-    public void revokeSession(Long sessionId, String username) {
-        User user = userRepository.findByUsername(username)
+    public void revokeSession(UUID sessionId, UUID userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         userSessionRepository.deleteByIdAndUser(sessionId, user);
     }
 
     @Transactional
-    public void revokeAllOtherSessions(String username, String currentRefreshToken) {
-        User user = userRepository.findByUsername(username)
+    public void revokeAllOtherSessions(UUID userId, String currentRefreshToken) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         UserSession currentSession = userSessionRepository.findByRefreshToken(currentRefreshToken)
@@ -132,10 +133,9 @@ public class AuthService {
         userSessionRepository.deleteByUserAndIdNot(user, currentSession.getId());
     }
 
-
     private String generateAccessToken(User user) {
         Instant now = Instant.now();
-        long exp = 3600L;
+        long exp = 604800L;
 
         Set<String> authorities = new HashSet<>();
         for (Role role : user.getRoles()) {
@@ -151,7 +151,7 @@ public class AuthService {
         JwtClaimsSet claimsSet = JwtClaimsSet
                 .builder()
                 .issuer("authentication-backend")
-                .subject(user.getUsername())
+                .subject(user.getEmail())
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(exp))
                 .claim("scope", scope)
@@ -159,18 +159,14 @@ public class AuthService {
                 .build();
 
         return this.jwtEncoder.encode(JwtEncoderParameters.from(claimsSet)).getTokenValue();
-
     }
-
 
     private AuthResponse createUserSession(User user, HttpServletRequest request) {
         Instant now = Instant.now();
         String userAgent = request.getHeader("User-Agent");
         String ipAddress = extractIp(request);
         String newRefreshToken = UUID.randomUUID().toString();
-        Instant newExpiryDate = now.plusSeconds(604800L); // 7 дней
-
-        userSessionRepository.deleteByUserAndExpiresAtBefore(user, now);
+        Instant newExpiryDate = now.plusSeconds(604800L);
 
         Optional<UserSession> existingSessionOpt =
                 userSessionRepository.findByUserAndUserAgentAndIpAddress(user, userAgent, ipAddress);
@@ -181,7 +177,7 @@ public class AuthService {
             session.setRefreshToken(newRefreshToken);
             session.setCreatedAt(now);
             session.setExpiresAt(newExpiryDate);
-            log.info("Updating existing session ID: {} for user: {}", session.getId(), user.getUsername());
+            log.info("Updating existing session ID: {} for user: {}", session.getId(), user.getEmail());
         } else {
             session = new UserSession();
             session.setUser(user);
@@ -190,13 +186,13 @@ public class AuthService {
             session.setExpiresAt(newExpiryDate);
             session.setUserAgent(userAgent);
             session.setIpAddress(ipAddress);
-            log.info("Creating new session for user: {} on new device", user.getUsername());
+            log.info("Creating new session for user: {} on new device", user.getEmail());
         }
 
         userSessionRepository.save(session);
 
         String accessToken = generateAccessToken(user);
-        return new AuthResponse(accessToken, session.getRefreshToken(), user.getUsername());
+        return new AuthResponse(accessToken, session.getRefreshToken(), user.getId());
     }
 
     @Transactional
@@ -215,5 +211,4 @@ public class AuthService {
         }
         return xfHeader.split(",")[0].trim();
     }
-
 }
